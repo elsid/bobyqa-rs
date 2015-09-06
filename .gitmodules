@@ -1,0 +1,3 @@
+[submodule "bobyqa-cpp"]
+	path = bobyqa-cpp
+	url = https://github.com/elsid/bobyqa-cpp.git
