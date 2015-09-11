@@ -193,6 +193,8 @@ impl <'a> Bobyqa <'a> {
         assert!(self.number_of_interpolation_conditions >= self.variables_count + 2);
         assert!(self.number_of_interpolation_conditions <=
             (self.variables_count + 1)*(self.variables_count + 2)/2);
+        assert!(self.lower_bound.is_some());
+        assert!(self.upper_bound.is_some());
         assert!(self.lower_bound.unwrap().len() >= self.variables_count);
         assert!(self.upper_bound.unwrap().len() >= self.variables_count);
     }
