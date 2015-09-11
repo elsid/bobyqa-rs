@@ -48,6 +48,7 @@ extern "C" {
         xl: *const f64, xu: *const f64, rhobeg: f64, rhoend: f64, maxfun: i64, w: *mut f64) -> f64;
 }
 
+#[derive(Clone)]
 pub struct Bobyqa <'a> {
     variables_count: usize,
     number_of_interpolation_conditions: usize,
