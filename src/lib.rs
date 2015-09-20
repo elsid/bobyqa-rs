@@ -1,6 +1,6 @@
 use std::os::raw::c_void;
 
-type Function = fn(data: *const c_void, n: i64, x: *const f64) -> f64;
+type Function = extern fn(data: *const c_void, n: i64, x: *const f64) -> f64;
 
 #[repr(C)]
 struct Closure {
@@ -10,7 +10,7 @@ struct Closure {
 
 impl Closure {
     pub fn new<F>(function: &F) -> Closure where F: Fn(&[f64]) -> f64 {
-        fn wrap<F>(closure: *const c_void, n: i64, x: *const f64) -> f64
+        extern fn wrap<F>(closure: *const c_void, n: i64, x: *const f64) -> f64
                 where F: Fn(&[f64]) -> f64 {
             use std::slice::from_raw_parts;
             let closure = closure as *const F;
@@ -20,7 +20,7 @@ impl Closure {
     }
 }
 
-type FunctionMut = fn(data: *mut c_void, n: i64, x: *const f64) -> f64;
+type FunctionMut = extern fn(data: *mut c_void, n: i64, x: *const f64) -> f64;
 
 #[repr(C)]
 struct ClosureMut {
@@ -30,7 +30,7 @@ struct ClosureMut {
 
 impl ClosureMut {
     pub fn new<F>(function: &mut F) -> ClosureMut where F: FnMut(&[f64]) -> f64 {
-        fn wrap<F>(closure: *mut c_void, n: i64, x: *const f64) -> f64
+        extern fn wrap<F>(closure: *mut c_void, n: i64, x: *const f64) -> f64
                 where F: FnMut(&[f64]) -> f64 {
             use std::slice::from_raw_parts;
             let closure = closure as *mut F;
