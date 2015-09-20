@@ -57,19 +57,14 @@ pub struct Bobyqa <'a> {
     lower_bound: Option<&'a [f64]>,
     upper_bound: Option<&'a [f64]>,
     max_function_calls_count: usize,
-    working_space: Vec<f64>,
 }
 
 impl <'a> Bobyqa <'a> {
     pub fn new() -> Bobyqa <'a> {
-        use std::iter::repeat;
         const VARIABLES_COUNT: usize = 2;
         const NUMBER_OF_INTERPOLATION_CONDITIONS: usize = VARIABLES_COUNT + 2;
         static LOWER_BOUND: [f64; VARIABLES_COUNT] = [0.0, 0.0];
         static UPPER_BOUND: [f64; VARIABLES_COUNT] = [1.0, 1.0];
-        let working_space_size = Bobyqa::working_space_size(
-            VARIABLES_COUNT,
-            NUMBER_OF_INTERPOLATION_CONDITIONS);
         Bobyqa {
             variables_count: VARIABLES_COUNT,
             number_of_interpolation_conditions: NUMBER_OF_INTERPOLATION_CONDITIONS,
@@ -78,7 +73,6 @@ impl <'a> Bobyqa <'a> {
             initial_trust_region_radius: 1e-6,
             final_trust_region_radius: 1e6,
             max_function_calls_count: 1000,
-            working_space: repeat(0.0).take(working_space_size).collect::<_>(),
         }
     }
 
@@ -136,11 +130,11 @@ impl <'a> Bobyqa <'a> {
     /// assert_eq!(Bobyqa::new().perform(&mut x, &f), 0.0);
     /// assert_eq!(x, [0.0, 0.0]);
     /// ```
-    pub fn perform<F>(&mut self, values: &mut [f64], function: &F) -> f64
+    pub fn perform<F>(&self, values: &mut [f64], function: &F) -> f64
             where F: Fn(&[f64]) -> f64 {
         self.check(values);
-        self.resize_working_space();
         let closure = Closure::new(function);
+        let mut working_space = self.working_space();
         unsafe {
             bobyqa_closure_const(
                 &closure as *const _,
@@ -152,7 +146,7 @@ impl <'a> Bobyqa <'a> {
                 self.initial_trust_region_radius,
                 self.final_trust_region_radius,
                 self.max_function_calls_count as i64,
-                self.working_space.as_mut_ptr(),
+                working_space.as_mut_ptr(),
             )
         }
     }
@@ -168,11 +162,11 @@ impl <'a> Bobyqa <'a> {
     /// assert_eq!(x, [0.0, 0.0]);
     /// assert_eq!(*c, 28);
     /// ```
-    pub fn perform_mut<F>(&mut self, values: &mut [f64], function: &mut F) -> f64
+    pub fn perform_mut<F>(&self, values: &mut [f64], function: &mut F) -> f64
             where F: FnMut(&[f64]) -> f64 {
         self.check(values);
-        self.resize_working_space();
         let mut closure = ClosureMut::new(function);
+        let mut working_space = self.working_space();
         unsafe {
             bobyqa_closure(
                 &mut closure as *mut _,
@@ -184,7 +178,7 @@ impl <'a> Bobyqa <'a> {
                 self.initial_trust_region_radius,
                 self.final_trust_region_radius,
                 self.max_function_calls_count as i64,
-                self.working_space.as_mut_ptr(),
+                working_space.as_mut_ptr(),
             )
         }
     }
@@ -200,14 +194,12 @@ impl <'a> Bobyqa <'a> {
         assert!(self.upper_bound.unwrap().len() >= self.variables_count);
     }
 
-    fn resize_working_space(&mut self) {
+    fn working_space(&self) -> Vec<f64> {
         use std::iter::repeat;
         let working_space_size = Bobyqa::working_space_size(
             self.number_of_interpolation_conditions,
             self.variables_count);
-        if self.working_space.len() != working_space_size {
-            self.working_space = repeat(0.0).take(working_space_size).collect::<_>();
-        }
+        repeat(0.0).take(working_space_size).collect::<Vec<f64>>()
     }
 
     fn working_space_size(number_of_interpolation_conditions: usize, variables_count: usize) -> usize {
