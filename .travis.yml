@@ -1,0 +1,5 @@
+language: rust
+before_script:
+  - export CC=clang
+  - export CXX=clang++
+after_failure: cat build.log
