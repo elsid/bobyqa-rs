@@ -123,13 +123,6 @@ impl <'a> Bobyqa <'a> {
         self
     }
 
-    /// ```
-    /// use bobyqa::Bobyqa;
-    /// let mut x = [0.5, 0.5];
-    /// let f = |x: &[f64]| -> f64 { x[0] + x[1] };
-    /// assert_eq!(Bobyqa::new().perform(&mut x, &f), 0.0);
-    /// assert_eq!(x, [0.0, 0.0]);
-    /// ```
     pub fn perform<F>(&self, values: &mut [f64], function: &F) -> f64
             where F: Fn(&[f64]) -> f64 {
         self.check(values);
@@ -151,17 +144,6 @@ impl <'a> Bobyqa <'a> {
         }
     }
 
-    /// ```
-    /// use bobyqa::Bobyqa;
-    /// let mut c = Box::new(0_u64);
-    /// let mut x = [0.5, 0.5];
-    /// {
-    ///     let mut f = |x: &[f64]| -> f64 { *c += 1; x[0] + x[1] };
-    ///     assert_eq!(Bobyqa::new().perform_mut(&mut x, &mut f), 0.0);
-    /// }
-    /// assert_eq!(x, [0.0, 0.0]);
-    /// assert_eq!(*c, 28);
-    /// ```
     pub fn perform_mut<F>(&self, values: &mut [f64], function: &mut F) -> f64
             where F: FnMut(&[f64]) -> f64 {
         self.check(values);
@@ -207,6 +189,15 @@ impl <'a> Bobyqa <'a> {
         + (number_of_interpolation_conditions + 13)
             *(number_of_interpolation_conditions + variables_count)
     }
+}
+
+#[test]
+fn test_pefrorm_should_succeed() {
+    let mut values = [0.5, 0.5];
+    let function = |x: &[f64]| -> f64 { x[0] + x[1] };
+    let result = Bobyqa::new().perform(&mut values, &function);
+    assert_eq!(values, [0.0, 0.0]);
+    assert_eq!(result, 0.0);
 }
 
 #[test]
