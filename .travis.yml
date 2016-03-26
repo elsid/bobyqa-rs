@@ -8,8 +8,14 @@ cache:
 
 addons:
   apt:
-    sources: ['llvm-toolchain-precise', 'ubuntu-toolchain-r-test']
-    packages: ['clang-3.8']
+    sources:
+      - llvm-toolchain-precise
+      - ubuntu-toolchain-r-test
+    packages:
+      - clang-3.8
+      - libcurl4-openssl-dev
+      - libelf-dev
+      - libdw-dev
 
 env:
   global:
@@ -21,6 +27,8 @@ env:
     - CXX='ccache clang++-3.8'
     - CFLAGS='-Wno-error=unused-command-line-argument'
     - CXXFLAGS='-Wno-error=unused-command-line-argument'
+    - LOCAL=${HOME}/.local
+    - PATH=${LOCAL}/bin:${PATH}
 
 before_script:
   - cmake --version
@@ -28,3 +36,13 @@ before_script:
   - ${CXX} --version
 
 after_failure: cat build.log
+
+after_success:
+  - git clone https://github.com/SimonKagstrom/kcov.git
+  - mkdir kcov/build
+  - cd kcov/build
+  - cmake -DCMAKE_INSTALL_PREFIX:PATH=${LOCAL} ..
+  - make -j $(nproc)
+  - make install
+  - cd ../..
+  - kcov --coveralls-id=${TRAVIS_JOB_ID} --exclude-pattern=/.cargo target/kcov target/debug/bobyqa-*
