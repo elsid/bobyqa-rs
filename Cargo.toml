@@ -3,3 +3,7 @@ name = "bobyqa"
 version = "0.1.0"
 authors = ["elsid <elsid.mail@gmail.com>"]
 build = "build.rs"
+
+[[bin]]
+name = "example"
+path = "src/example.rs"
