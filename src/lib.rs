@@ -192,7 +192,7 @@ impl <'a> Bobyqa <'a> {
 }
 
 #[test]
-fn test_pefrorm_should_succeed() {
+fn test_perform_should_succeed() {
     let mut values = [0.5, 0.5];
     let function = |x: &[f64]| -> f64 { x[0] + x[1] };
     let result = Bobyqa::new().perform(&mut values, &function);
@@ -201,7 +201,7 @@ fn test_pefrorm_should_succeed() {
 }
 
 #[test]
-fn test_pefrorm_mut_with_all_settings_should_succeed() {
+fn test_perform_mut_with_all_settings_should_succeed() {
     let mut calls_count = Box::new(0);
     let mut values = [1.0, -1.0, 0.0];
     let lower_bound = [-3.0, -2.0, -1.0];
